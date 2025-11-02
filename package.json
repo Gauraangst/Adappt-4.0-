@@ -1,0 +1,22 @@
+{
+  "name": "energy-monitoring-app",
+  "version": "1.0.0",
+  "description": "Full-stack energy monitoring application",
+  "scripts": {
+    "install-all": "cd backend && npm install && cd ../frontend && npm install && cd ../ml && pip install -r requirements.txt",
+    "start-backend": "cd backend && npm start",
+    "start-frontend": "cd frontend && npm start",
+    "start-ml": "cd ml && python app.py",
+    "dev-backend": "cd backend && npm run dev"
+  },
+  "keywords": [
+    "energy",
+    "monitoring",
+    "analytics",
+    "ml",
+    "react",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT"
+}
