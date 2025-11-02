@@ -70,3 +70,6 @@ coverage/
 __pycache__/
 *.pyc
 *.pyo
+
+# Local Netlify folder
+.netlify

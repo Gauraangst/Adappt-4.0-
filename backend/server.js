@@ -54,9 +54,30 @@ app.use('/api/users', userRoutes);
 app.use('/api/usage', usageRoutes);
 app.use('/api/insights', insightsRoutes);
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Energy Monitoring API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      users: '/api/users',
+      usage: '/api/usage',
+      insights: '/api/insights'
+    },
+    docs: 'Visit /health to check API status'
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Energy Monitoring API is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'Energy Monitoring API is running',
+    timestamp: new Date().toISOString(),
+    mode: USE_DEMO_MODE ? 'DEMO' : 'PRODUCTION'
+  });
 });
 
 // Error handling middleware
