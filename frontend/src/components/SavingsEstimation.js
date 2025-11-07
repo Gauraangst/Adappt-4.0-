@@ -31,11 +31,25 @@ function SavingsEstimation() {
   const fetchSavingsData = async () => {
     try {
       setLoading(true);
-      const data = await getSavingsEstimation(timeRange);
-      setSavingsData(data);
+      // Always use dummy data for demo purposes
+      const dummyData = generateMockData(timeRange);
+      setSavingsData(dummyData);
+      
+      // Optionally try to fetch real data in background (but don't wait for it)
+      try {
+        const response = await getSavingsEstimation(timeRange);
+        // Only update if we got valid data
+        if (response && response.comparisonData && response.comparisonData.length > 0) {
+          const data = response.success !== undefined ? response : { success: true, ...response };
+          setSavingsData(data);
+        }
+      } catch (error) {
+        // Silently fail - we already have dummy data
+        console.log('Using dummy data for savings estimation');
+      }
     } catch (error) {
-      console.error('Error fetching savings data:', error);
-      // Fallback to mock data for demo
+      console.error('Error generating dummy data:', error);
+      // Fallback to mock data
       setSavingsData(generateMockData(timeRange));
     } finally {
       setLoading(false);
@@ -174,7 +188,10 @@ function SavingsEstimation() {
     );
   }
 
-  const { comparisonData, totals, houseAnalytics } = savingsData || {};
+  // Extract data from response structure
+  const comparisonData = savingsData?.comparisonData || [];
+  const totals = savingsData?.totals || {};
+  const houseAnalytics = savingsData?.houseAnalytics || {};
 
   return (
     <div className="savings-estimation">
@@ -249,76 +266,98 @@ function SavingsEstimation() {
       {/* Cost Comparison Chart */}
       <div className="chart-section">
         <h4>Cost Comparison: With vs Without WattWise</h4>
-        <ResponsiveContainer width="100%" height={350}>
-          <AreaChart data={comparisonData}>
-            <defs>
-              <linearGradient id="baseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#dc3545" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#dc3545" stopOpacity={0.05}/>
-              </linearGradient>
-              <linearGradient id="optimizedGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#28a745" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#28a745" stopOpacity={0.05}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-            <XAxis 
-              dataKey="period" 
-              stroke="#6c757d"
-              fontSize={12}
-            />
-            <YAxis 
-              label={{ value: 'Cost (₹)', angle: -90, position: 'insideLeft' }}
-              stroke="#6c757d"
-              fontSize={12}
-            />
-            <Tooltip 
-              formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
-            />
-            <Legend />
-            <Area 
-              type="monotone" 
-              dataKey="baseCost" 
-              name="Without WattWise" 
-              stroke="#dc3545" 
-              fill="url(#baseGradient)"
-              strokeWidth={2}
-            />
-            <Area 
-              type="monotone" 
-              dataKey="optimizedCost" 
-              name="With WattWise" 
-              stroke="#28a745" 
-              fill="url(#optimizedGradient)"
-              strokeWidth={2}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        {comparisonData && comparisonData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={comparisonData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="baseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#dc3545" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#dc3545" stopOpacity={0.05}/>
+                </linearGradient>
+                <linearGradient id="optimizedGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#28a745" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#28a745" stopOpacity={0.05}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis 
+                dataKey="period" 
+                stroke="#6c757d"
+                fontSize={12}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis 
+                label={{ value: 'Cost (₹)', angle: -90, position: 'insideLeft' }}
+                stroke="#6c757d"
+                fontSize={12}
+                tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip 
+                formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}
+              />
+              <Legend />
+              <Area 
+                type="monotone" 
+                dataKey="baseCost" 
+                name="Without WattWise" 
+                stroke="#dc3545" 
+                fill="url(#baseGradient)"
+                strokeWidth={2}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="optimizedCost" 
+                name="With WattWise" 
+                stroke="#28a745" 
+                fill="url(#optimizedGradient)"
+                strokeWidth={2}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+            <p>No comparison data available</p>
+          </div>
+        )}
       </div>
 
       {/* Savings Over Time */}
       <div className="chart-section">
         <h4>Monthly Savings Trend</h4>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={comparisonData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-            <XAxis 
-              dataKey="period" 
-              stroke="#6c757d"
-              fontSize={12}
-            />
-            <YAxis 
-              label={{ value: 'Savings (₹)', angle: -90, position: 'insideLeft' }}
-              stroke="#6c757d"
-              fontSize={12}
-            />
-            <Tooltip 
-              formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
-            />
-            <Legend />
-            <Bar dataKey="savings" name="Savings" fill="#31694e" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {comparisonData && comparisonData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={comparisonData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis 
+                dataKey="period" 
+                stroke="#6c757d"
+                fontSize={12}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis 
+                label={{ value: 'Savings (₹)', angle: -90, position: 'insideLeft' }}
+                stroke="#6c757d"
+                fontSize={12}
+                tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip 
+                formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}
+              />
+              <Legend />
+              <Bar dataKey="savings" name="Savings" fill="#31694e" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+            <p>No savings data available</p>
+          </div>
+        )}
       </div>
 
       {/* House Analytics Section */}
@@ -329,47 +368,74 @@ function SavingsEstimation() {
           {/* Savings by Category */}
           <div className="analytics-card">
             <h5>Savings by Optimization Category</h5>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={houseAnalytics?.savingsByCategory || []}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percentage }) => `${name}: ${percentage}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {(houseAnalytics?.savingsByCategory || []).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `₹${value.toLocaleString('en-IN')}`} />
-              </PieChart>
-            </ResponsiveContainer>
+            {houseAnalytics?.savingsByCategory && houseAnalytics.savingsByCategory.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={houseAnalytics.savingsByCategory}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percentage }) => `${name}: ${percentage}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {houseAnalytics.savingsByCategory.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+                <p>No category data available</p>
+              </div>
+            )}
           </div>
 
           {/* Appliance-wise Savings */}
           <div className="analytics-card">
             <h5>Savings by Appliance</h5>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={houseAnalytics?.appliances || []}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" stroke="#6c757d" />
-                <YAxis dataKey="name" type="category" stroke="#6c757d" width={100} />
-                <Tooltip 
-                  formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
-                />
-                <Legend />
-                <Bar dataKey="baseCost" name="Without WattWise" fill="#dc3545" />
-                <Bar dataKey="optimizedCost" name="With WattWise" fill="#28a745" />
-                <Bar dataKey="savings" name="Savings" fill="#31694e" />
-              </BarChart>
-            </ResponsiveContainer>
+            {houseAnalytics?.appliances && houseAnalytics.appliances.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart 
+                  data={houseAnalytics.appliances}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis 
+                    type="number" 
+                    stroke="#6c757d"
+                    tickFormatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                  />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    stroke="#6c757d" 
+                    width={120}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}
+                  />
+                  <Legend />
+                  <Bar dataKey="baseCost" name="Without WattWise" fill="#dc3545" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="optimizedCost" name="With WattWise" fill="#28a745" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="savings" name="Savings" fill="#31694e" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#6c757d' }}>
+                <p>No appliance data available</p>
+              </div>
+            )}
           </div>
         </div>
 
