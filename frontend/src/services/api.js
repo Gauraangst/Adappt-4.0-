@@ -81,4 +81,16 @@ export const getMonthlyInsights = async () => {
   return response.data;
 };
 
+// Appliance Efficiency
+export const getApplianceEfficiency = async () => {
+  const response = await api.get('/insights/efficiency');
+  return response.data;
+};
+
+// Savings Estimation
+export const getSavingsEstimation = async (range = 'monthly') => {
+  const response = await api.get(`/insights/savings?range=${range}`);
+  return response.data;
+};
+
 export default api;

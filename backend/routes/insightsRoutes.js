@@ -136,4 +136,296 @@ router.get('/monthly', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/insights/efficiency - Calculate appliance efficiency metrics
+router.get('/efficiency', authMiddleware, async (req, res) => {
+  try {
+    const appliances = await Appliance.find({ userId: req.user.userId });
+    const applianceIds = appliances.map(a => a._id);
+
+    // Get usage data for last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const usageData = await Usage.find({
+      applianceId: { $in: applianceIds },
+      timestamp: { $gte: thirtyDaysAgo }
+    }).populate('applianceId', 'name powerRating').sort({ timestamp: 1 });
+
+    // Group usage by appliance and calculate efficiency
+    const applianceUsage = {};
+    const applianceEfficiencyHistory = {};
+
+    usageData.forEach(usage => {
+      const appliance = usage.applianceId;
+      const applianceId = appliance._id.toString();
+      const applianceName = appliance.name;
+      const day = new Date(usage.timestamp).toISOString().split('T')[0];
+
+      if (!applianceUsage[applianceId]) {
+        applianceUsage[applianceId] = {
+          name: applianceName,
+          powerRating: appliance.powerRating,
+          totalConsumption: 0,
+          count: 0,
+          efficiencyHistory: []
+        };
+        applianceEfficiencyHistory[applianceName] = {};
+      }
+
+      applianceUsage[applianceId].totalConsumption += usage.consumption;
+      applianceUsage[applianceId].count += 1;
+
+      // Calculate daily efficiency
+      if (!applianceEfficiencyHistory[applianceName][day]) {
+        applianceEfficiencyHistory[applianceName][day] = {
+          consumption: 0,
+          count: 0
+        };
+      }
+      applianceEfficiencyHistory[applianceName][day].consumption += usage.consumption;
+      applianceEfficiencyHistory[applianceName][day].count += 1;
+    });
+
+    // Calculate efficiency for each appliance
+    const appliancesWithEfficiency = [];
+    let totalEfficiency = 0;
+
+    Object.values(applianceUsage).forEach(app => {
+      const avgConsumption = app.totalConsumption / app.count;
+      // Efficiency = (powerRating - actualConsumption) / powerRating * 100
+      // But we'll calculate as: (powerRating - wasted power) / powerRating
+      // wasted = powerRating - avgConsumption (in watts)
+      const efficiency = app.powerRating > 0 
+        ? Math.max(0, Math.min(100, ((app.powerRating - Math.abs(app.powerRating - avgConsumption)) / app.powerRating) * 100))
+        : 0;
+      
+      // Alternative calculation: efficiency based on how close consumption is to rated power
+      // If consumption is close to rated power, efficiency is high
+      const efficiencyScore = app.powerRating > 0
+        ? Math.min(100, (avgConsumption / app.powerRating) * 100)
+        : 0;
+
+      // Count days with low efficiency (<70%)
+      const historicalData = applianceEfficiencyHistory[app.name];
+      let daysLowEfficiency = 0;
+      Object.values(historicalData).forEach(dayData => {
+        const dayAvg = dayData.consumption / dayData.count;
+        const dayEfficiency = app.powerRating > 0
+          ? Math.min(100, (dayAvg / app.powerRating) * 100)
+          : 0;
+        if (dayEfficiency < 70) {
+          daysLowEfficiency++;
+        }
+      });
+
+      appliancesWithEfficiency.push({
+        name: app.name,
+        powerRating: app.powerRating,
+        avgConsumption: avgConsumption,
+        efficiency: parseFloat(efficiencyScore.toFixed(1)),
+        daysLowEfficiency: daysLowEfficiency
+      });
+
+      totalEfficiency += efficiencyScore;
+    });
+
+    // Generate historical efficiency data for charts
+    const historicalData = [];
+    const uniqueDays = new Set();
+    Object.values(applianceEfficiencyHistory).forEach(appData => {
+      Object.keys(appData).forEach(day => uniqueDays.add(day));
+    });
+
+    Array.from(uniqueDays).sort().forEach(day => {
+      const dayData = { date: day };
+      appliancesWithEfficiency.forEach(app => {
+        if (applianceEfficiencyHistory[app.name][day]) {
+          const dayConsumption = applianceEfficiencyHistory[app.name][day].consumption / 
+                                 applianceEfficiencyHistory[app.name][day].count;
+          const dayEfficiency = app.powerRating > 0
+            ? Math.min(100, (dayConsumption / app.powerRating) * 100)
+            : 0;
+          dayData[app.name] = parseFloat(dayEfficiency.toFixed(1));
+        }
+      });
+      historicalData.push(dayData);
+    });
+
+    const overallEfficiency = appliancesWithEfficiency.length > 0
+      ? totalEfficiency / appliancesWithEfficiency.length
+      : 0;
+
+    res.json({
+      success: true,
+      appliances: appliancesWithEfficiency,
+      historicalData: historicalData,
+      overallEfficiency: parseFloat(overallEfficiency.toFixed(1))
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error', message: error.message });
+  }
+});
+
+// GET /api/insights/savings - Calculate savings estimation
+router.get('/savings', authMiddleware, async (req, res) => {
+  try {
+    const { range = 'monthly' } = req.query; // weekly, monthly, yearly
+    const ratePerKWh = 6.5; // ₹6.5 per kWh
+    const baselineSavingsRate = 0.18; // 18% average savings
+
+    const appliances = await Appliance.find({ userId: req.user.userId });
+    const applianceIds = appliances.map(a => a._id);
+
+    let startDate = new Date();
+    let comparisonData = [];
+
+    if (range === 'weekly') {
+      startDate.setDate(startDate.getDate() - 56); // 8 weeks
+    } else if (range === 'monthly') {
+      startDate.setMonth(startDate.getMonth() - 8); // 8 months
+    } else if (range === 'yearly') {
+      startDate.setFullYear(startDate.getFullYear() - 3); // 3 years
+    }
+
+    const usageData = await Usage.find({
+      applianceId: { $in: applianceIds },
+      timestamp: { $gte: startDate }
+    }).populate('applianceId', 'name powerRating').sort({ timestamp: 1 });
+
+    // Group consumption by period
+    const consumptionByPeriod = {};
+
+    usageData.forEach(usage => {
+      let period;
+      const date = new Date(usage.timestamp);
+      
+      if (range === 'weekly') {
+        const weekNum = Math.floor((date - startDate) / (7 * 24 * 60 * 60 * 1000));
+        period = `Week ${weekNum + 1}`;
+      } else if (range === 'monthly') {
+        period = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      } else {
+        period = date.getFullYear().toString();
+      }
+
+      if (!consumptionByPeriod[period]) {
+        consumptionByPeriod[period] = {
+          consumption: 0,
+          optimizedConsumption: 0
+        };
+      }
+
+      consumptionByPeriod[period].consumption += usage.consumption;
+    });
+
+    // Calculate savings for each period
+    Object.keys(consumptionByPeriod).sort().forEach(period => {
+      const baseConsumption = consumptionByPeriod[period].consumption;
+      const baseCost = baseConsumption * ratePerKWh;
+      const optimizedConsumption = baseConsumption * (1 - baselineSavingsRate);
+      const optimizedCost = optimizedConsumption * ratePerKWh;
+      const savings = baseCost - optimizedCost;
+
+      comparisonData.push({
+        period,
+        baseCost: parseFloat(baseCost.toFixed(2)),
+        optimizedCost: parseFloat(optimizedCost.toFixed(2)),
+        savings: parseFloat(savings.toFixed(2)),
+        baseConsumption: parseFloat(baseConsumption.toFixed(1)),
+        optimizedConsumption: parseFloat(optimizedConsumption.toFixed(1)),
+        savingsRate: parseFloat((baselineSavingsRate * 100).toFixed(1))
+      });
+    });
+
+    // Calculate totals
+    const totalBaseCost = comparisonData.reduce((sum, d) => sum + d.baseCost, 0);
+    const totalOptimizedCost = comparisonData.reduce((sum, d) => sum + d.optimizedCost, 0);
+    const totalSavings = totalBaseCost - totalOptimizedCost;
+    const avgSavingsRate = comparisonData.length > 0 
+      ? (totalSavings / totalBaseCost) * 100 
+      : baselineSavingsRate * 100;
+
+    // Calculate house analytics
+    const totalConsumption = comparisonData.reduce((sum, d) => sum + d.baseConsumption, 0);
+    const totalOptimizedConsumption = comparisonData.reduce((sum, d) => sum + d.optimizedConsumption, 0);
+
+    const savingsByCategory = [
+      { 
+        name: 'Peak Hour Optimization', 
+        value: parseFloat((totalSavings * 0.35).toFixed(2)), 
+        percentage: 35 
+      },
+      { 
+        name: 'Device Scheduling', 
+        value: parseFloat((totalSavings * 0.25).toFixed(2)), 
+        percentage: 25 
+      },
+      { 
+        name: 'Standby Reduction', 
+        value: parseFloat((totalSavings * 0.20).toFixed(2)), 
+        percentage: 20 
+      },
+      { 
+        name: 'Maintenance Alerts', 
+        value: parseFloat((totalSavings * 0.15).toFixed(2)), 
+        percentage: 15 
+      },
+      { 
+        name: 'Behavior Insights', 
+        value: parseFloat((totalSavings * 0.05).toFixed(2)), 
+        percentage: 5 
+      }
+    ];
+
+    // Appliance-wise breakdown
+    const applianceBreakdown = {};
+    usageData.forEach(usage => {
+      const applianceName = usage.applianceId.name;
+      if (!applianceBreakdown[applianceName]) {
+        applianceBreakdown[applianceName] = {
+          consumption: 0,
+          optimizedConsumption: 0
+        };
+      }
+      applianceBreakdown[applianceName].consumption += usage.consumption;
+      applianceBreakdown[applianceName].optimizedConsumption += usage.consumption * (1 - baselineSavingsRate);
+    });
+
+    const applianceSummary = Object.keys(applianceBreakdown).map(name => {
+  const breakdown = applianceBreakdown[name];
+  const baseCost = breakdown.consumption * ratePerKWh;
+  const optimizedCost = breakdown.optimizedConsumption * ratePerKWh;
+  const savings = baseCost - optimizedCost;
+  const percentage = totalBaseCost > 0 ? (baseCost / totalBaseCost) * 100 : 0;
+
+  return {
+    name,
+    baseCost: parseFloat(baseCost.toFixed(2)),
+    optimizedCost: parseFloat(optimizedCost.toFixed(2)),
+    savings: parseFloat(savings.toFixed(2)),
+    percentage: parseFloat(percentage.toFixed(1))
+  };
+});
+
+    res.json({
+      success: true,
+      comparisonData,
+      totals: {
+        baseCost: parseFloat(totalBaseCost.toFixed(2)),
+        optimizedCost: parseFloat(totalOptimizedCost.toFixed(2)),
+        savings: parseFloat(totalSavings.toFixed(2)),
+        savingsRate: parseFloat(avgSavingsRate.toFixed(1))
+      },
+      houseAnalytics: {
+        totalConsumption: parseFloat(totalConsumption.toFixed(1)),
+        optimizedConsumption: parseFloat(totalOptimizedConsumption.toFixed(1)),
+        savingsByCategory,
+        appliances: appliances.slice(0, 5) // Top 5 appliances
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error', message: error.message });
+  }
+});
+
 module.exports = router;

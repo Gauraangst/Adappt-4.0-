@@ -10,6 +10,8 @@ import EnergyDistributionChart from '../components/EnergyDistributionChart';
 import DeviceControlPanel from '../components/DeviceControlPanel';
 import VariableTimeChart from '../components/VariableTimeChart';
 import CSVUpload from '../components/CSVUpload';
+import ApplianceEfficiencyMonitor from '../components/ApplianceEfficiencyMonitor';
+import SavingsEstimation from '../components/SavingsEstimation';
 
 function Dashboard({ token, setToken }) {
   const [insights, setInsights] = useState(null);
@@ -280,6 +282,19 @@ function Dashboard({ token, setToken }) {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* New Features Section */}
+      <div className="new-features-section">
+        {/* Appliance Efficiency Monitor */}
+        <div className="feature-section">
+          <ApplianceEfficiencyMonitor />
+        </div>
+
+        {/* Savings Estimation */}
+        <div className="feature-section">
+          <SavingsEstimation />
         </div>
       </div>
     </div>

@@ -5015,3 +5015,701 @@ body {
     text-align: center;
   }
 }
+
+/* New Features Section */
+.new-features-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+  gap: 30px;
+  margin-top: 40px;
+}
+
+.feature-section {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(187, 200, 99, 0.1);
+}
+
+@media (max-width: 1200px) {
+  .new-features-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Appliance Efficiency Monitor Styles */
+.efficiency-monitor {
+  width: 100%;
+}
+
+.efficiency-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.efficiency-header h3 {
+  font-size: 1.75rem;
+  color: var(--primary-darkest);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.efficiency-subtitle {
+  color: var(--medium-gray);
+  font-size: 1rem;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.loading-state .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--light-gray);
+  border-top: 4px solid var(--primary-medium);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.overall-efficiency-card {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-medium));
+  padding: 30px;
+  border-radius: 20px;
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 30px;
+  align-items: center;
+}
+
+.efficiency-score {
+  display: flex;
+  justify-content: center;
+}
+
+.score-circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.score-value {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--primary-darkest);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.efficiency-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 12px;
+}
+
+.breakdown-label {
+  font-size: 0.9rem;
+  color: var(--primary-darkest);
+  font-weight: 500;
+}
+
+.breakdown-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary-darkest);
+}
+
+.efficiency-monitor .chart-section {
+  margin-bottom: 30px;
+}
+
+.efficiency-monitor .chart-section h4 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.appliances-list-section {
+  margin-bottom: 30px;
+}
+
+.appliances-list-section h4 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.appliances-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.appliance-efficiency-card {
+  background: var(--light-gray);
+  border-radius: 15px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.appliance-efficiency-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-medium);
+}
+
+.appliance-efficiency-card.selected {
+  border-color: var(--primary-medium);
+  background: linear-gradient(135deg, rgba(240, 228, 145, 0.2), rgba(187, 200, 99, 0.2));
+}
+
+.appliance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.appliance-header h5 {
+  margin: 0;
+  color: var(--primary-darkest);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.efficiency-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.appliance-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--medium-gray);
+}
+
+.detail-row span:last-child {
+  font-weight: 600;
+  color: var(--primary-darkest);
+}
+
+.status-text {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.warning-row {
+  padding: 10px;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 8px;
+  color: #856404;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.efficiency-alerts-section {
+  margin-top: 30px;
+}
+
+.efficiency-alerts-section h4 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.efficiency-alert-card {
+  background: var(--white);
+  border: 2px solid #ffc107;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: var(--shadow);
+}
+
+.alert-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.alert-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.alert-info h5 {
+  margin: 0 0 8px 0;
+  color: var(--primary-darkest);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.alert-info p {
+  margin: 0;
+  color: var(--medium-gray);
+  line-height: 1.5;
+}
+
+.recommendation-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.recommendation-option {
+  background: var(--light-gray);
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.recommendation-option.recommended {
+  border-color: var(--primary-medium);
+  background: linear-gradient(135deg, rgba(240, 228, 145, 0.2), rgba(187, 200, 99, 0.2));
+}
+
+.recommendation-option h6 {
+  margin: 0 0 15px 0;
+  color: var(--primary-darkest);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.cost-info, .savings-info, .roi-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.cost-label, .savings-label {
+  color: var(--medium-gray);
+}
+
+.cost-value {
+  font-weight: 600;
+  color: var(--primary-darkest);
+}
+
+.savings-value {
+  font-weight: 700;
+  color: #28a745;
+}
+
+.roi-info {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  font-weight: 600;
+  color: var(--primary-darkest);
+}
+
+.alert-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-darkest));
+  color: white;
+}
+
+.action-btn.secondary {
+  background: var(--light-gray);
+  color: var(--primary-darkest);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.no-alerts {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(76, 175, 80, 0.1));
+  border-radius: 15px;
+}
+
+.no-alerts-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.no-alerts h4 {
+  color: var(--primary-darkest);
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.no-alerts p {
+  color: var(--medium-gray);
+  font-size: 1rem;
+}
+
+/* Savings Estimation Styles */
+.savings-estimation {
+  width: 100%;
+}
+
+.savings-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.savings-header h3 {
+  font-size: 1.75rem;
+  color: var(--primary-darkest);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.savings-subtitle {
+  color: var(--medium-gray);
+  font-size: 1rem;
+}
+
+.time-range-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  background: var(--light-gray);
+  padding: 8px;
+  border-radius: 12px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.time-range-selector button {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--medium-gray);
+}
+
+.time-range-selector button.active {
+  background: var(--white);
+  color: var(--primary-darkest);
+  box-shadow: var(--shadow);
+}
+
+.time-range-selector button:hover {
+  color: var(--primary-darkest);
+}
+
+.savings-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.summary-card {
+  background: var(--white);
+  border: 1px solid rgba(187, 200, 99, 0.1);
+  border-radius: 15px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.summary-card.primary {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-medium));
+}
+
+.summary-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.summary-content {
+  flex: 1;
+}
+
+.summary-content h4 {
+  margin: 0 0 10px 0;
+  color: var(--primary-darkest);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-darkest);
+  margin-bottom: 5px;
+  line-height: 1;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: var(--medium-gray);
+}
+
+.savings-estimation .chart-section {
+  background: var(--white);
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(187, 200, 99, 0.1);
+}
+
+.savings-estimation .chart-section h4 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.house-analytics-section {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(187, 200, 99, 0.1);
+  margin-top: 30px;
+}
+
+.house-analytics-section h4 {
+  color: var(--primary-darkest);
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.analytics-card {
+  background: var(--light-gray);
+  padding: 25px;
+  border-radius: 15px;
+}
+
+.analytics-card h5 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.breakdown-table {
+  margin-top: 30px;
+}
+
+.breakdown-table h5 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.breakdown-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.breakdown-table thead {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-medium));
+}
+
+.breakdown-table th {
+  padding: 15px;
+  text-align: left;
+  color: var(--primary-darkest);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.breakdown-table td {
+  padding: 15px;
+  border-bottom: 1px solid var(--light-gray);
+  color: var(--dark-gray);
+}
+
+.breakdown-table tr:last-child td {
+  border-bottom: none;
+}
+
+.breakdown-table tbody tr:hover {
+  background: var(--light-gray);
+}
+
+.impact-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--light-gray);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.impact-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.key-insights {
+  margin-top: 30px;
+}
+
+.key-insights h5 {
+  color: var(--primary-darkest);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.insight-card {
+  background: linear-gradient(135deg, var(--primary-light), rgba(255,255,255,0.8));
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--primary-medium);
+}
+
+.insight-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.insight-card h6 {
+  margin: 0 0 10px 0;
+  color: var(--primary-darkest);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.insight-card p {
+  margin: 0;
+  color: var(--medium-gray);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .overall-efficiency-card {
+    grid-template-columns: 1fr;
+  }
+
+  .efficiency-breakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .appliances-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .savings-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .savings-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
